@@ -1,6 +1,6 @@
 import { Body, Controller } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { MessagePattern } from '@nestjs/microservices';
+import { MessagePattern, Payload } from '@nestjs/microservices';
 import { LoginUserDto, RegisterUserDto } from 'src/dto';
 
 @Controller()
@@ -18,7 +18,7 @@ export class AuthController {
   }
 
   @MessagePattern('auth.verify.user')
-  verifyUser() {
-    return 'auth.verify.user';
+  verifyUser(@Payload() token: string) {
+    return this.authService.verifyToken(token);
   }
 }

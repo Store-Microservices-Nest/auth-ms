@@ -5,6 +5,7 @@ import { PrismaClient } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { LoginUserDto, RegisterUserDto } from 'src/dto';
 import { JwtPayload } from './interfaces/Jwt-Payload.interface';
+import { envs } from 'src/config';
 
 @Injectable()
 export class AuthService extends PrismaClient implements OnModuleInit {
@@ -93,5 +94,25 @@ export class AuthService extends PrismaClient implements OnModuleInit {
 
   async signJwt(payload: JwtPayload) {
     return this.jwtService.sign(payload);
+  }
+
+  async verifyToken(token: string) {
+    try {
+      const { sub, iat, exp, ...user } = this.jwtService.verify(token, {
+        secret: envs.jwtSecret,
+      });
+
+      return {
+        user: user,
+        token: await this.signJwt(user),
+      };
+    } catch (error) {
+      console.log(error);
+
+      throw new RpcException({
+        status: 401,
+        message: 'Invalid token',
+      });
+    }
   }
 }
